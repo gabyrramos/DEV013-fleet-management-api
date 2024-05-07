@@ -913,10 +913,7 @@ La librería recomendada dependerá del lenguaje de programación
 que hayas elegido:
 
 * Si estás usando NodeJS, puedes instalar y configurar
-[Node-postgres](https://node-postgres.com/)
-o
 [Prisma](https://www.prisma.io/docs/orm/overview/introduction/what-is-prisma).
-Discute con una coach la diferencia entre estas dos librerías.
 * Si estás usando Python, puedes instalar y configurar
 [SqlAlchemy](https://docs.sqlalchemy.org/en/latest/orm/quickstart.html)
 
