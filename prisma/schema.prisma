@@ -12,3 +12,9 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Taxi {
+  id Int @id @default(autoincrement())
+  plate String 
+  @@map("taxis")
+}
