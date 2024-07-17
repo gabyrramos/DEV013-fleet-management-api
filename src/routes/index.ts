@@ -5,7 +5,7 @@ import trajectoriesRouter from './trajectories';
 const router = Router();
 
 
-router.use('./taxis', taxisRouter);
-router.use('./trajectories', trajectoriesRouter);
+router.use(taxisRouter);
+//router.use('/trajectories', trajectoriesRouter);
 
 export default router;

@@ -13,7 +13,7 @@ exports.getAllTrajectories = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const getAllTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const trajectories = yield prisma.trajectories.findMany();
+    const trajectories = yield prisma.trajectory.findMany();
     console.log(trajectories);
     res.status(200).json(trajectories);
 });

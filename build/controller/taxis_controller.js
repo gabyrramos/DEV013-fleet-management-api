@@ -15,6 +15,8 @@ const prisma = new client_1.PrismaClient();
 const getAllTaxis = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const taxis = yield prisma.taxi.findMany();
+        skip: 0;
+        take: 10;
         console.log(taxis);
         res.status(200).json(taxis);
     }

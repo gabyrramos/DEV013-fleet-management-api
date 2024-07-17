@@ -18,3 +18,9 @@ model Taxi {
   plate String 
   @@map("taxis")
 }
+
+model Trajectory {
+  id Int @id @default(autoincrement())
+  taxi_id Int
+  @@map("trajectories")
+}

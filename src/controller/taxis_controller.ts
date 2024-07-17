@@ -6,8 +6,8 @@ const prisma = new PrismaClient();
 export const getAllTaxis = async(req: Request, res: Response): Promise<void> => {
     try {
         const taxis = await prisma.taxi.findMany()
-        skip: 10,
-        take: 
+        skip: 0;
+        take: 10;
         console.log(taxis);
         res.status(200).json(taxis);
 } catch (error) {
