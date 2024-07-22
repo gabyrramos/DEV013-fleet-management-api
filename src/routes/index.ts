@@ -6,6 +6,6 @@ const router = Router();
 
 
 router.use(taxisRouter);
-//router.use('/trajectories', trajectoriesRouter);
+router.use(trajectoriesRouter);
 
 export default router;

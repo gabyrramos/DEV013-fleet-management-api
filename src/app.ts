@@ -17,7 +17,7 @@ app.use('/api/trajectories', trajectoriesRoutes);
 
 //Estableciendo el puerto://
 app.listen(PORT, (): void => {
-    console.log('Escuchando el siguiente puerto :', PORT);
+console.log('Escuchando el siguiente puerto :', PORT);
 });
 
 export default app;
