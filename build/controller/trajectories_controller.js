@@ -13,8 +13,27 @@ exports.getAllTrajectories = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const getAllTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const trajectories = yield prisma.trajectory.findMany();
-    console.log(trajectories);
-    res.status(200).json(trajectories);
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const size = parseInt(req.query.size) || 10;
+        const offset = (page - 1) * size;
+        const trajectories = yield prisma.trajectory.findMany({
+            skip: offset,
+            take: size
+        });
+        console.log("Aqui probando el resultado de trajectorias:", trajectories);
+        const totalTrajectories = yield prisma.trajectory.count();
+        const totalPages = Math.ceil(totalTrajectories / size);
+        res.status(200).json({
+            data: trajectories,
+            page,
+            size,
+            totalPages,
+            totalTrajectories
+        });
+    }
+    catch (error) {
+        res.status(400).json({ 'Page or limit is not valid': error });
+    }
 });
 exports.getAllTrajectories = getAllTrajectories;

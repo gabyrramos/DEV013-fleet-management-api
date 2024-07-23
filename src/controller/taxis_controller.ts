@@ -20,7 +20,6 @@ export const getAllTaxis = async (req: Request, res: Response): Promise<void> =>
         const totalTaxis = await prisma.taxi.count();
         const totalPages = Math.ceil(totalTaxis / size);
 
-
         res.status(200).json({
             data: taxis,
             page,

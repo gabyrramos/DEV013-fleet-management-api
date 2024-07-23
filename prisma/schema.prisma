@@ -23,5 +23,8 @@ model Taxi {
 model Trajectory {
   id Int @id @default(autoincrement())
   taxi_id Int
+  date  DateTime
+  latitude Float
+  longitude Float
   @@map("trajectories")
 }
