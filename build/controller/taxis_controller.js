@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllTaxis = void 0;
+exports.filterTaxis = exports.getAllTaxis = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const getAllTaxis = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -33,7 +33,33 @@ const getAllTaxis = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
     }
     catch (error) {
-        res.status(500).json({ 'Algo salio mal': error });
+        res.status(400).json({ 'Page or limit is not valid': error });
     }
 });
 exports.getAllTaxis = getAllTaxis;
+const filterTaxis = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { search } = req.query;
+        if (!search) {
+            return res.status(400).json({ error: 'Parametros son requeridos para la busqueda' });
+        }
+        const searchID = parseInt(search);
+        const isNumberSearch = !isNaN(searchID);
+        const searchTaxi = yield prisma.taxi.findMany({
+            where: {
+                OR: [
+                    isNumberSearch ? { id: searchID } : {},
+                    { plate: { contains: search } },
+                ]
+            }
+        });
+        console.log("Aqui viendo si funciona el search de id o plate:", searchTaxi);
+        res.status(200).json({
+            data: searchTaxi,
+        });
+    }
+    catch (error) {
+        res.status(400).json({ 'Busqueda no valida': error });
+    }
+});
+exports.filterTaxis = filterTaxis;
