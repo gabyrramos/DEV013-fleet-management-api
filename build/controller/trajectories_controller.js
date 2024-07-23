@@ -39,32 +39,22 @@ const getAllTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, funct
 exports.getAllTrajectories = getAllTrajectories;
 const filterTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        //para buscar necesitas:
-        //acceder al query y si no hay query no se puede realizar busqueda
         const { search, date } = req.query;
-        if (!search) {
+        if (!search && !date) {
             res.status(400).json({ error: 'Se necesitan parametros para realizar busqueda de trajectorias' });
         }
         ;
-        //en la busqueda necesitas poder usar el numero de id como string
         const searchID = parseInt(search);
-        const searchDate = new Date(date);
-        //le asignamos a esta constante la variable donde le decimos que no es numero
-        //lo usaremos dentro de .findMany
         const isNumberSearch = !isNaN(searchID);
-        const isDateSearch = !isNaN(searchDate.getTime());
-        //quieres decirle que va a buscar id y fecha 
-        //aqui esta busqueda la depositamos en una variable
-        const searchTrajectory = prisma.trajectory.findMany({
+        const searchDate = new Date(date);
+        const isDateSearch = searchDate;
+        const endDate = new Date(searchDate);
+        endDate.setDate(endDate.getDate() + 1);
+        const searchTrajectory = yield prisma.trajectory.findMany({
             where: {
-                OR: [
-                    isNumberSearch ? { id: searchID } : {},
-                    isDateSearch ? { date: searchDate } : {},
-                ],
+                taxi_id: searchID, date: { gte: searchDate, lte: endDate }
             },
         });
-        //tiene que incluir latitude y longitud y el timestamp // aqui aplicamos lo que prisma no enseño
-        //devolvemos la respuesta con un 200 
         console.log("Aqui viendo si busqueda por id y fecha funciona:", searchTrajectory);
         res.status(200).json({
             data: searchTrajectory,

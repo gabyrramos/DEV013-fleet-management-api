@@ -33,33 +33,27 @@ export const getAllTrajectories = async (req: Request, res: Response): Promise<v
 
 export const filterTrajectories = async (req: Request, res: Response) => {
     try {
-        //para buscar necesitas:
-        //acceder al query y si no hay query no se puede realizar busqueda
+    
         const { search, date } = req.query;
 
-        if (!search) {
+        if (!search && !date) {
             res.status(400).json({ error: 'Se necesitan parametros para realizar busqueda de trajectorias' });
         };
-        //en la busqueda necesitas poder usar el numero de id como string
-        const searchID = parseInt(search as string);
-        const searchDate = new Date (date as string);
-        //le asignamos a esta constante la variable donde le decimos que no es numero
-        //lo usaremos dentro de .findMany
-        const isNumberSearch = !isNaN(searchID);
-        const isDateSearch = !isNaN(searchDate.getTime());
-        //quieres decirle que va a buscar id y fecha 
-        //aqui esta busqueda la depositamos en una variable
         
-        const searchTrajectory = prisma.trajectory.findMany({
-            where: {
-                OR: [
-                    isNumberSearch ? { id: searchID } : {},
-                    isDateSearch ? { date : searchDate } : {},
-                ],
+        const searchID = parseInt(search as string);
+        const isNumberSearch = !isNaN(searchID);
+
+        const searchDate = new Date (date as string);
+        const endDate = new Date (searchDate);
+        endDate.setDate(endDate.getDate() + 1)
+        
+        
+        const searchTrajectory = await prisma.trajectory.findMany({
+             where: {
+                 taxi_id: searchID, date : {gte:searchDate,lte:endDate}
             },
         });
-        //tiene que incluir latitude y longitud y el timestamp // aqui aplicamos lo que prisma no enseño
-        //devolvemos la respuesta con un 200 
+
         console.log("Aqui viendo si busqueda por id y fecha funciona:", searchTrajectory);
 
         res.status(200).json({
