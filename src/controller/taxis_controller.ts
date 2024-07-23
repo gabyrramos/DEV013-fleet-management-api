@@ -30,6 +30,6 @@ export const getAllTaxis = async (req: Request, res: Response): Promise<void> =>
             totalTaxis
         });
     } catch (error) {
-        res.status(500).json({ 'Algo salio mal': error });
+        res.status(400).json({ 'Page or limit is not valid': error });
     }
 };
