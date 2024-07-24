@@ -39,7 +39,7 @@ const getAllTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, funct
 exports.getAllTrajectories = getAllTrajectories;
 const filterTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { search, date } = req.query;
+        const { search, date, page, size } = req.query;
         if (!search && !date) {
             res.status(400).json({ error: 'Se necesitan parametros para realizar busqueda de trajectorias' });
         }
@@ -47,17 +47,31 @@ const filterTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const searchID = parseInt(search);
         const isNumberSearch = !isNaN(searchID);
         const searchDate = new Date(date);
-        const isDateSearch = searchDate;
         const endDate = new Date(searchDate);
         endDate.setDate(endDate.getDate() + 1);
+        //agregando variables para la paginacion aqui
+        const filterPage = parseInt(page) || 1;
+        const pageSize = parseInt(size) || 10;
+        const offset = (filterPage - 1) * pageSize;
         const searchTrajectory = yield prisma.trajectory.findMany({
             where: {
                 taxi_id: searchID, date: { gte: searchDate, lte: endDate }
             },
+            //para paginacion
+            skip: offset,
+            take: pageSize,
         });
         console.log("Aqui viendo si busqueda por id y fecha funciona:", searchTrajectory);
+        //para que la paginacion muestre el total de items y paginas
+        const totalFilteredTrajectories = yield prisma.trajectory.count({ where: { taxi_id: searchID, date: { gte: searchDate, lte: endDate } } });
+        const totalFilteredPages = Math.ceil(totalFilteredTrajectories / pageSize);
         res.status(200).json({
             data: searchTrajectory,
+            //agregando para que imprima la informacion de la paginacion
+            page: filterPage,
+            size: pageSize,
+            totalFilteredPages,
+            totalFilteredTrajectories,
         });
     }
     catch (error) {

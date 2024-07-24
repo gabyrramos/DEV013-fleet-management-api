@@ -34,7 +34,7 @@ export const getAllTrajectories = async (req: Request, res: Response): Promise<v
 export const filterTrajectories = async (req: Request, res: Response) => {
     try {
     
-        const { search, date } = req.query;
+        const { search, date, page, size } = req.query;
 
         if (!search && !date) {
             res.status(400).json({ error: 'Se necesitan parametros para realizar busqueda de trajectorias' });
@@ -46,18 +46,34 @@ export const filterTrajectories = async (req: Request, res: Response) => {
         const searchDate = new Date (date as string);
         const endDate = new Date (searchDate);
         endDate.setDate(endDate.getDate() + 1)
-        
-        
+    
+        //agregando variables para la paginacion aqui
+         const filterPage = parseInt(page as string) || 1;
+         const pageSize = parseInt(size as string) || 10;
+         const offset = (filterPage - 1) * pageSize;
+
         const searchTrajectory = await prisma.trajectory.findMany({
-             where: {
+            where: {
                  taxi_id: searchID, date : {gte:searchDate,lte:endDate}
             },
+            //para paginacion
+            skip: offset,
+            take: pageSize,
         });
 
         console.log("Aqui viendo si busqueda por id y fecha funciona:", searchTrajectory);
 
+        //para que la paginacion muestre el total de items y paginas
+         const totalFilteredTrajectories = await prisma.trajectory.count({ where:{ taxi_id: searchID, date : {gte:searchDate,lte:endDate}}});
+         const totalFilteredPages = Math.ceil(totalFilteredTrajectories / pageSize);
+
         res.status(200).json({
             data: searchTrajectory,
+            //agregando para que imprima la informacion de la paginacion
+            page: filterPage,
+            size: pageSize,
+            totalFilteredPages,
+            totalFilteredTrajectories,
         });
     } catch (error) {
         console.error('Error en la busqueda de trayectorias', error);
