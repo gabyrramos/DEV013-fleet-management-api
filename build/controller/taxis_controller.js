@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.filterTaxis = exports.getAllTaxis = void 0;
+exports.getAllLastTrajectories = exports.filterTaxis = exports.getAllTaxis = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const getAllTaxis = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -63,3 +63,36 @@ const filterTaxis = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.filterTaxis = filterTaxis;
+const getAllLastTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Obtener todos los IDs de taxis
+        const allTaxiIDs = yield prisma.taxi.findMany({
+            select: { id: true }
+        });
+        // Obtener la última trayectoria para cada taxi
+        const taxisLastTrajectory = yield Promise.all(allTaxiIDs.map((taxi) => __awaiter(void 0, void 0, void 0, function* () {
+            const lastTrajectory = yield prisma.trajectory.findFirst({
+                where: { taxi_id: taxi.id },
+                orderBy: { date: 'desc' },
+            });
+            if (lastTrajectory) {
+                return {
+                    taxiID: taxi.id,
+                    lastTrajectory,
+                };
+            }
+            else {
+                return null;
+            }
+        })));
+        const filteredTaxisLastTrajectory = taxisLastTrajectory.filter(t => t !== null);
+        res.status(200).json({
+            data: filteredTaxisLastTrajectory,
+        });
+    }
+    catch (error) {
+        console.error("Tenemos un error buscando las ultimas trayectorias");
+        res.status(400).json({ error: "Error en la busqueda de ultimas trayectorias" });
+    }
+});
+exports.getAllLastTrajectories = getAllLastTrajectories;

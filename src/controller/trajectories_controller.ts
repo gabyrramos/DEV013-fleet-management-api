@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { isDate } from 'node:util/types';
 
 const prisma = new PrismaClient();
 
@@ -81,3 +82,4 @@ export const filterTrajectories = async (req: Request, res: Response) => {
 
     }
 };
+
