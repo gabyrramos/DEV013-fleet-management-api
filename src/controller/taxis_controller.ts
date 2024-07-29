@@ -39,8 +39,8 @@ export const filterTaxis = async (req: Request, res: Response) => {
 
         if (!search) {
             return res.status(400).json({ error: 'Parametros son requeridos para la busqueda' });
-          }
-          
+        }
+
         const searchID = parseInt(search as string);
         const isNumberSearch = !isNaN(searchID);
         const searchTaxi = await prisma.taxi.findMany({
@@ -80,21 +80,21 @@ export const getAllLastTrajectories = async (req: Request, res: Response) => {
                     return {
                         taxiID: taxi.id,
                         lastTrajectory,
-                };
-            } else {
-                    return null ;
+                    };
+                } else {
+                    return null;
                 }
-                })
+            })
         );
-        const filteredTaxisLastTrajectory = taxisLastTrajectory.filter( t=> t!== null);
+        const filteredTaxisLastTrajectory = taxisLastTrajectory.filter(t => t !== null);
 
         res.status(200).json({
             data: filteredTaxisLastTrajectory,
         });
     } catch (error) {
         console.error("Tenemos un error buscando las ultimas trayectorias");
-        
-        res.status(400).json({error: "Error en la busqueda de ultimas trayectorias"});
-        
+
+        res.status(400).json({ error: "Error en la busqueda de ultimas trayectorias" });
+
     }
 }
