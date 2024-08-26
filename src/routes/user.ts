@@ -3,7 +3,7 @@ import { postUser } from "../controller/users.controller";
 
 const router = Router();
 
-router.post('/users', postUser);
+router.post('/', postUser);
 
 export default router;
 
