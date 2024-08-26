@@ -20,20 +20,21 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         //el cuerpo debe tener email y password
         const { name, email, password } = req.body;
-        if (!name || email) {
-            res.status(400).json({ error: 'Nombre o email invalido' });
+        console.log('Received body:', req.body);
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: 'Nombre o email invalido' });
         }
         //luego validamos que el correo no exista en la db
-        const existingEmail = yield prisma.user.findUnique({
+        const existingEmail = yield prisma.users.findUnique({
             where: { email }
         });
         if (existingEmail) {
-            res.status(409).json({ error: 'El correo electronico ya existe' });
+            return res.status(409).json({ error: 'El correo electronico ya existe' });
         }
         //debemos hashear pw para que se guarde la contraseña encriptada
         const hashedPassword = yield bcrypt_1.default.hash(password, 5);
         //despues posteamos dentro de data el usuario 
-        const user = yield prisma.user.create({
+        const user = yield prisma.users.create({
             data: {
                 name,
                 email,
@@ -43,6 +44,7 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(200).json(user);
     }
     catch (error) {
+        console.error('Error:', error);
         res.status(500).json({
             error: 'Hubo un error con la operación'
         });

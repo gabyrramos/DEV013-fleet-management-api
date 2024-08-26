@@ -14,7 +14,7 @@ const prisma = new client_1.PrismaClient();
 app.use(express_1.default.json());
 app.use('/api/taxis', taxis_1.default);
 app.use('/api/trajectories', trajectories_1.default);
-app.use('/api/user', user_1.default);
+app.use('/api/users', user_1.default);
 //Estableciendo el puerto://
 app.listen(PORT, () => {
     console.log('Escuchando el siguiente puerto :', PORT);

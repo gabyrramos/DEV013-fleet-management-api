@@ -12,38 +12,42 @@ export const postUser = async (req: Request, res:Response) => {
         
         //el cuerpo debe tener email y password
         const {name, email, password} = req.body;
+        console.log('Received body:', req.body);
+        
 
-        if(!name || email ){
-            res.status(400).json({error: 'Nombre o email invalido'})
+        if(!name || !email || !password ){
+            return res.status(400).json({error: 'Nombre o email invalido'})
         }
     
         //luego validamos que el correo no exista en la db
-        const existingEmail = await prisma.user.findUnique({
+        const existingEmail = await prisma.users.findUnique({
             where: { email }
         });
     
         if (existingEmail){
-            res.status(409).json({error: 'El correo electronico ya existe'});
+            return res.status(409).json({error: 'El correo electronico ya existe'});
         }
     
     //debemos hashear pw para que se guarde la contraseña encriptada
      const hashedPassword = await bcrypt.hash(password, 5);
     
     //despues posteamos dentro de data el usuario 
-       const user = await prisma.user.create({
+       const user = await prisma.users.create({
         data: {
-        name,
-        email,
-        password: hashedPassword,
+            name,
+            email,
+            password: hashedPassword,
        },
     });
+
     res.status(200).json(user);
 
     } catch (error) {
+    console.error('Error:', error);
     
      res.status(500).json({
         error: 'Hubo un error con la operación'
-     })
+     });
     }
 }
 
