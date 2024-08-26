@@ -1,5 +1,3 @@
-import { log } from 'console';
-import { response } from 'express';
 import jwt from 'jsonwebtoken';
 const secretKey = 'g6WQSrsv7rC7et5B';
 const userPayload = {ud:1, username: 'anita.borg@systers.xyz'};
