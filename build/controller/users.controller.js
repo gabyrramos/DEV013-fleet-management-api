@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postUser = void 0;
+exports.editUser = exports.postUser = void 0;
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const prisma = new client_1.PrismaClient();
@@ -51,3 +51,23 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.postUser = postUser;
+const editUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        //quiero poder acceder al cuerpo del request
+        const { name, email, password } = req.body;
+        //quiero decirle que el nuevo cuerpo debe de tener email, name y password si o si
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: 'Datos incompletos' });
+        }
+        //    const updatedInfo = prisma.users.update({
+        //     data: {
+        //     name,
+        //     email,
+        //     password,
+        //     },
+        // });
+    }
+    catch (error) {
+    }
+});
+exports.editUser = editUser;

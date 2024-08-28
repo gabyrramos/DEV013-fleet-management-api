@@ -51,6 +51,23 @@ export const postUser = async (req: Request, res:Response) => {
     }
 }
 
+
+
+export const getUsers = async (req: Request, res: Response) => {
+
+    try {
+        const users = await prisma.users.findMany();
+        console.log("Aqui probando respuesta usuarios");
+
+        return res.status(200).json(users);
+        
+    } catch (error) {
+        return res.status(400).json({error: 'Error al bsucar usuarios'});
+        
+    }
+    
+}
+
 export const editUser = async (req: Request, res:Response) => {
     
     try {
@@ -64,13 +81,13 @@ export const editUser = async (req: Request, res:Response) => {
         }
        
 
-       const updatedInfo = prisma.users.update({
-        data: {
-        name,
-        email,
-        password,
-        },
-    });
+    //    const updatedInfo = prisma.users.update({
+    //     data: {
+    //     name,
+    //     email,
+    //     password,
+    //     },
+    // });
 
     } catch (error) {
         
