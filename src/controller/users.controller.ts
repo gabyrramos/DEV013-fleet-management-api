@@ -51,3 +51,29 @@ export const postUser = async (req: Request, res:Response) => {
     }
 }
 
+export const editUser = async (req: Request, res:Response) => {
+    
+    try {
+       //quiero poder acceder al cuerpo del request
+       const { name, email, password } = req.body;
+
+       //quiero decirle que el nuevo cuerpo debe de tener email, name y password si o si
+       
+       if (!name || !email || !password){
+        return res.status(400).json({error:'Datos incompletos'});
+        }
+       
+
+       const updatedInfo = prisma.users.update({
+        data: {
+        name,
+        email,
+        password,
+        },
+    });
+
+    } catch (error) {
+        
+    }
+
+}
