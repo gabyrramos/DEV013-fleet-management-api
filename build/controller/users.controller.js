@@ -92,27 +92,28 @@ exports.editUser = editUser;
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { identifier } = req.params;
-        // Verificamos si el identificador es numérico (id)
-        if (!isNaN(Number(identifier))) {
-            const id = parseInt(identifier);
+        // Verifica si el identifier es un número
+        const id = parseInt(identifier);
+        if (!isNaN(id)) {
+            // Si es un número, elimina el usuario por ID
             const eliminarUser = yield prisma.users.delete({
-                where: { id },
+                where: { id: id },
             });
-            console.log("Usuario fue eliminado por ID:", eliminarUser);
+            console.log("Usuario fue eliminado", eliminarUser);
             return res.status(200).json({ "Usuario eliminado": eliminarUser });
         }
-        // Caso contrario, asumir que es un nombre
         else {
+            // Si no es un número, se asume que es un nombre
             const eliminarUser = yield prisma.users.deleteMany({
                 where: { name: identifier },
             });
-            console.log("Usuario eliminado por Nombre:", eliminarUser);
-            return res.status(200).json({ "Usuario eliminado": eliminarUser });
+            console.log("Usuario fue eliminado", eliminarUser);
+            return res.status(200).json({ "Usuarios eliminados": eliminarUser });
         }
     }
     catch (error) {
         console.error("Error al tratar de eliminar usuario", error);
-        return res.status(404).json({ "Error al eliminar usuario": error });
+        return res.status(404).json({ "Usuario no encontrado o error": error });
     }
 });
 exports.deleteUser = deleteUser;
