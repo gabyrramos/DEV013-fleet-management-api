@@ -1,0 +1,64 @@
+import { error, log } from "console";
+import { Request, Response, NextFunction } from "express";
+
+
+const jwt = require('jsonwebtoken');
+
+
+//Aqui verificamos el token con un middleware
+export const jwtMiddleware = (secretKey: string) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        const { authorization } = req.headers;
+        if (!authorization) {
+            return res.status(401).json({ message: 'Falta el token de autorización' });
+        }
+        //analyzamos el header para confirmar que tienen bearer y token
+        const [type, token] = authorization.split(' ');
+        if (type.toLowerCase() !== 'bearer') {
+            return res.status(400).json({ message: 'Formato de token incorrecto' });
+        }
+        try {
+            const decodedToken = jwt.verify(token, secretKey) as any;
+            req.user = {
+                id: decodedToken.id,
+                email: decodedToken.email,
+                role: decodedToken.role  
+            };
+            console.log("Aqui el decoded token:", decodedToken);
+
+        } catch (error) {
+            return res.status(403).json({ message: 'No tienes permiso para acceder' });
+        }
+        next();
+    };
+};
+
+//aqui verificamos si el usuario esta autenticado
+export const isAuthenticated = (req:Request, res:Response, next:NextFunction) => {
+    if (!req.user) {
+        return res.status(401).json({ message: 'No estás autenticado' });
+    }
+    next();
+};
+//verificamos si el usuario es admin
+export const isAdmin = (req:Request, res:Response, next:NextFunction) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        return res.status(403).json({ message: 'Acceso restringido: no eres administrador' });
+    }
+};
+
+//requiere autenticacion
+export const requireAuth = (req:Request, res:Response, next:NextFunction) => {
+    module.exports.isAuthenticated(req, res, next);
+};
+
+//requiere que el usuario sea el admin
+export const requireAdmin = (req:Request, res:Response, next:NextFunction) => {
+    module.exports.isAuthenticated(req, res, (err: any) => {
+        if (err) return res.status(401).json({ message: 'No autorizado' });
+        module.exports.isAdmin(req, res, next);
+    });
+};
+

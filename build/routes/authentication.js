@@ -12,38 +12,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.jwtMiddleware = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const console_1 = require("console");
 const db_1 = __importDefault(require("../db"));
 const bcrypt = require('bcrypt');
 module.exports = (app, next) => {
-    const user = {
-        id: 7,
-        email: 'admin@localhost',
-        password: '12345'
-    };
+    // const user = {
+    //     id: 7,
+    //     email: 'admin@localhost',
+    //     password: '12345'
+    // };
     const secretKey = 'secret_key';
-    const hashedPassword = bcrypt.hashSync(user.password, 10);
-    app.post('/login', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    // const hashedPassword = bcrypt.hashSync(user.password, 10);
+    app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const { email, password } = req.body;
             if (!email && !password) {
                 return res.status(400).json({ 'Los datos son invalidos': console_1.error });
             }
-            const admin = db_1.default.users.findUnique, { where: { id: id, email: email, password: password } };
+            const admin = yield db_1.default.users.findUnique({
+                where: { email }
+            });
             if (!admin) {
                 console.error("No se encontro el usuario", console_1.error);
                 return res.status(400).json({ "No existe un usuario con esos datos": console_1.error });
             }
             ;
             //aqui validamos la contraseña
-            const validateAdmin = yield bcrypt.compare(hashedPassword, user.password);
+            const validateAdmin = yield bcrypt.compare(password, admin.password);
             if (!validateAdmin) {
                 return res.status(404).json({ "No se pudo validar la contraseña": console_1.error });
             }
             // Generamos token
-            const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: '1h' });
+            const token = jsonwebtoken_1.default.sign({ id: admin.id, email: admin.email }, secretKey, { expiresIn: '1h' });
             console.log('Generando token:', token);
             return res.status(200).send(token);
         }
@@ -55,28 +56,3 @@ module.exports = (app, next) => {
     }));
     next();
 };
-//Aqui verificamos con un middleware el token
-const jwtMiddleware = (secretKey) => {
-    return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { authorization } = req.headers;
-        if (!authorization)
-            return next();
-        //analyzamos el header
-        const [type, token] = authorization.split(' ');
-        if (type.toLowerCase() !== 'bearer')
-            return next();
-        try {
-            const decodedToken = jsonwebtoken_1.default.verify(token, secretKey);
-            req.user = {
-                id: decodedToken.id,
-                email: decodedToken.email
-            };
-            console.log("Aqui el decoded token:", decodedToken);
-        }
-        catch (error) {
-            return res.status(403).json({ message: 'No tienes permiso para acceder' });
-        }
-        next();
-    });
-};
-exports.jwtMiddleware = jwtMiddleware;
