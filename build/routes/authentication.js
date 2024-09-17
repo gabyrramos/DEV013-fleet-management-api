@@ -12,39 +12,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.loginFunction = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const console_1 = require("console");
 const db_1 = __importDefault(require("../db"));
 const bcrypt = require('bcrypt');
-module.exports = (app, next) => {
-    // const user = {
-    //     id: 7,
-    //     email: 'admin@localhost',
-    //     password: '12345'
-    // };
+const loginFunction = (app) => {
     const secretKey = 'secret_key';
+    const adminUser = {
+        id: 1,
+        email: 'admin@localhost',
+        password: '12345',
+        role: 'admin'
+    };
     // const hashedPassword = bcrypt.hashSync(user.password, 10);
     app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const { email, password } = req.body;
             if (!email && !password) {
-                return res.status(400).json({ 'Los datos son invalidos': console_1.error });
+                return res.status(400).json({ message: 'Los datos son invalidos' });
             }
             const admin = yield db_1.default.users.findUnique({
-                where: { email }
+                where: { email },
             });
             if (!admin) {
-                console.error("No se encontro el usuario", console_1.error);
-                return res.status(400).json({ "No existe un usuario con esos datos": console_1.error });
+                console.error("No se encontro el usuario", Error);
+                return res.status(400).json({ "No existe un usuario con esos datos": Error });
             }
             ;
             //aqui validamos la contraseña
             const validateAdmin = yield bcrypt.compare(password, admin.password);
             if (!validateAdmin) {
-                return res.status(404).json({ "No se pudo validar la contraseña": console_1.error });
+                return res.status(404).json({ "No se pudo validar la contraseña": Error });
             }
             // Generamos token
-            const token = jsonwebtoken_1.default.sign({ id: admin.id, email: admin.email }, secretKey, { expiresIn: '1h' });
+            const token = jsonwebtoken_1.default.sign({ id: admin.id, email: admin.email, role: admin.role }, secretKey, { expiresIn: '1h' });
             console.log('Generando token:', token);
             return res.status(200).send(token);
         }
@@ -54,5 +55,5 @@ module.exports = (app, next) => {
         }
         ;
     }));
-    next();
 };
+exports.loginFunction = loginFunction;

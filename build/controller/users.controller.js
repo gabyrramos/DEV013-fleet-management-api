@@ -39,6 +39,7 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 name,
                 email,
                 password: hashedPassword,
+                role: 'user'
             },
         });
         res.status(200).json(user);

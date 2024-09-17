@@ -1,9 +1,7 @@
-import { error, log } from "console";
 import { Request, Response, NextFunction } from "express";
+import jwt from 'jsonwebtoken';
 
-
-const jwt = require('jsonwebtoken');
-
+const secretKey = 'secret_key';
 
 //Aqui verificamos el token con un middleware
 export const jwtMiddleware = (secretKey: string) => {
@@ -24,9 +22,10 @@ export const jwtMiddleware = (secretKey: string) => {
                 email: decodedToken.email,
                 role: decodedToken.role  
             };
+            next();
             console.log("Aqui el decoded token:", decodedToken);
-
         } catch (error) {
+            console.error("Token verification error:", error);
             return res.status(403).json({ message: 'No tienes permiso para acceder' });
         }
         next();
@@ -51,14 +50,14 @@ export const isAdmin = (req:Request, res:Response, next:NextFunction) => {
 
 //requiere autenticacion
 export const requireAuth = (req:Request, res:Response, next:NextFunction) => {
-    module.exports.isAuthenticated(req, res, next);
+    isAuthenticated(req, res, next);
 };
 
 //requiere que el usuario sea el admin
 export const requireAdmin = (req:Request, res:Response, next:NextFunction) => {
-    module.exports.isAuthenticated(req, res, (err: any) => {
+    isAuthenticated(req, res, (err: any) => {
         if (err) return res.status(401).json({ message: 'No autorizado' });
-        module.exports.isAdmin(req, res, next);
+        isAdmin(req, res, next);
     });
 };
 

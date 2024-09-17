@@ -8,54 +8,72 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const console_1 = require("console");
-const jwt = require('jsonwebtoken');
+exports.requireAdmin = exports.requireAuth = exports.isAdmin = exports.isAuthenticated = exports.jwtMiddleware = void 0;
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const secretKey = 'secret_key';
 //Aqui verificamos el token con un middleware
 const jwtMiddleware = (secretKey) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { authorization } = req.headers;
         if (!authorization) {
-            return next();
+            return res.status(401).json({ message: 'Falta el token de autorización' });
         }
-        //analyzamos el header
+        //analyzamos el header para confirmar que tienen bearer y token
         const [type, token] = authorization.split(' ');
         if (type.toLowerCase() !== 'bearer') {
-            return next();
+            return res.status(400).json({ message: 'Formato de token incorrecto' });
         }
         try {
-            const decodedToken = jwt.verify(token, secretKey);
+            const decodedToken = jsonwebtoken_1.default.verify(token, secretKey);
             req.user = {
                 id: decodedToken.id,
-                email: decodedToken.email
+                email: decodedToken.email,
+                role: decodedToken.role
             };
+            next();
             console.log("Aqui el decoded token:", decodedToken);
         }
         catch (error) {
+            console.error("Token verification error:", error);
             return res.status(403).json({ message: 'No tienes permiso para acceder' });
         }
         next();
     });
 };
-module.exports.isAuthenticated = (req, res, next) => {
-    console.log(req.user);
-    return req.user != null;
-};
-module.exports.isAdmin = (req, res, next) => {
-    return req.user === 'admin';
-};
-module.exports.requireAuth = (req, res, next) => {
-    if (!module.exports.isAuthenticated(req, res, next)) {
-        return res.status(401).json({ 'No autorizado': console_1.error });
-    }
-    ;
-};
-module.exports.requireAdmin = (req, res, next) => {
-    if (!admin) {
-        return res.status(401).json({ 'No autorizado': console_1.error });
-    }
-    else if (!module.exports.isAdmin(req, res, next)) {
-        return res.status(403).json({ 'Acceso restringido': console_1.error });
+exports.jwtMiddleware = jwtMiddleware;
+//aqui verificamos si el usuario esta autenticado
+const isAuthenticated = (req, res, next) => {
+    if (!req.user) {
+        return res.status(401).json({ message: 'No estás autenticado' });
     }
     next();
 };
+exports.isAuthenticated = isAuthenticated;
+//verificamos si el usuario es admin
+const isAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    }
+    else {
+        return res.status(403).json({ message: 'Acceso restringido: no eres administrador' });
+    }
+};
+exports.isAdmin = isAdmin;
+//requiere autenticacion
+const requireAuth = (req, res, next) => {
+    (0, exports.isAuthenticated)(req, res, next);
+};
+exports.requireAuth = requireAuth;
+//requiere que el usuario sea el admin
+const requireAdmin = (req, res, next) => {
+    (0, exports.isAuthenticated)(req, res, (err) => {
+        if (err)
+            return res.status(401).json({ message: 'No autorizado' });
+        (0, exports.isAdmin)(req, res, next);
+    });
+};
+exports.requireAdmin = requireAdmin;
