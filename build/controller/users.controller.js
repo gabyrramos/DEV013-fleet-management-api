@@ -19,9 +19,9 @@ const prisma = new client_1.PrismaClient();
 const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         //el cuerpo debe tener email y password
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
         console.log('Received body:', req.body);
-        if (!name || !email || !password) {
+        if (!name || !email || !password || !role) {
             return res.status(400).json({ error: 'Nombre o email invalido' });
         }
         //luego validamos que el correo no exista en la db
@@ -68,9 +68,9 @@ const editUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { id } = req.params;
         console.log("Id recibido:", id);
         //quiero poder acceder al cuerpo del request 
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
         //quiero decirle que el nuevo cuerpo debe de tener email, name y password si o si
-        if (!name || !email || !password) {
+        if (!name || !email || !password || !role) {
             return res.status(400).json({ error: 'Datos incompletos' });
         }
         const updatedInfo = yield prisma.users.update({
@@ -79,6 +79,7 @@ const editUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 name,
                 email,
                 password,
+                role
             },
         });
         console.log("Informacion de usuario actualizada:", updatedInfo);

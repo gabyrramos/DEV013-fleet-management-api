@@ -22,7 +22,7 @@ const loginFunction = (app) => {
         id: 1,
         email: 'admin@localhost',
         password: '12345',
-        role: 'admin'
+        role: 'user'
     };
     // const hashedPassword = bcrypt.hashSync(user.password, 10);
     app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {

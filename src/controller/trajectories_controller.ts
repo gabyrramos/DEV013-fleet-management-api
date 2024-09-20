@@ -14,7 +14,7 @@ export const getAllTrajectories = async (req: Request, res: Response): Promise<v
             skip: offset,
             take: size
         });
-        console.log("Aqui probando el resultado de trajectorias:", trajectories);
+        console.log("Aqui probando el resultado de trayectorias:", trajectories);
 
         const totalTrajectories = await prisma.trajectory.count();
         const totalPages = Math.ceil(totalTrajectories / size);
@@ -64,7 +64,7 @@ export const filterTrajectories = async (req: Request, res: Response) => {
 
         console.log("Aqui viendo si busqueda por id y fecha funciona:", searchTrajectory);
 
-        //para que la paginacion muestre el total de items y paginas
+     //para que la paginacion muestre el total de items y paginas
          const totalFilteredTrajectories = await prisma.trajectory.count({ where:{ taxi_id: searchID, date : {gte:searchDate,lte:endDate}}});
          const totalFilteredPages = Math.ceil(totalFilteredTrajectories / pageSize);
 
@@ -78,7 +78,7 @@ export const filterTrajectories = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error('Error en la busqueda de trayectorias', error);
-        res.status(400).json({error: 'Hubo un error en la busqueda de trayectoras'})
+        res.status(400).json({error: 'Hubo un error en la busqueda de trayectorias'})
 
     }
 };

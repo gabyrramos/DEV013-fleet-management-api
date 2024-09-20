@@ -21,7 +21,7 @@ const getAllTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, funct
             skip: offset,
             take: size
         });
-        console.log("Aqui probando el resultado de trajectorias:", trajectories);
+        console.log("Aqui probando el resultado de trayectorias:", trajectories);
         const totalTrajectories = yield prisma.trajectory.count();
         const totalPages = Math.ceil(totalTrajectories / size);
         res.status(200).json({
@@ -76,7 +76,7 @@ const filterTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
     catch (error) {
         console.error('Error en la busqueda de trayectorias', error);
-        res.status(400).json({ error: 'Hubo un error en la busqueda de trayectoras' });
+        res.status(400).json({ error: 'Hubo un error en la busqueda de trayectorias' });
     }
 });
 exports.filterTrajectories = filterTrajectories;

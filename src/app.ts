@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client'
 import { loginFunction } from './routes/authentication';
 
 
+
 const app: Application = express();
 
 const PORT: number = 3001;
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/api/taxis', taxisRoutes);
 app.use('/api/trajectories', trajectoriesRoutes);
 app.use('/api/users', userRoutes);
+
 
 //registrando el endpoitn de log in
 loginFunction(app);
