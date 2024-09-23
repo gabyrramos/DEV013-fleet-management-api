@@ -34,7 +34,7 @@ const getAllTaxis = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     catch (error) {
         console.error("Error devolviendo la lista de taxis", error);
-        res.status(500).json({ 'Error interno': error });
+        res.status(400).json({ 'Page or limit is not valid': error });
     }
 });
 exports.getAllTaxis = getAllTaxis;

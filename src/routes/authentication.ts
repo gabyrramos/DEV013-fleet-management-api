@@ -5,12 +5,12 @@ const bcrypt = require('bcrypt');
 
 export const loginFunction = (app:Application) => {
     const secretKey = 'secret_key';
-      const adminUser = {
-          id: 1,
-          email: 'admin@localhost',
-        password: '12345',
-          role: 'user'
-       };
+    //   const adminUser = {
+    //       id: 1,
+    //       email: 'admin@localhost',
+    //     password: '12345',
+    //       role: 'user'
+    //    };
     
      //const hashedPassword = bcrypt.hashSync(user.password, 10);
 

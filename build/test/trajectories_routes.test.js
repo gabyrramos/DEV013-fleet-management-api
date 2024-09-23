@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supertest_1 = __importDefault(require("supertest"));
-const app_1 = __importDefault(require("../app")); // Asegúrate de importar la aplicación Express
+const app_1 = __importDefault(require("../app"));
 const client_1 = require("@prisma/client");
 // Mock de PrismaClient
 jest.mock('@prisma/client', () => {

@@ -26,7 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateExcel = void 0;
 const xlsx = __importStar(require("xlsx"));
 const path = __importStar(require("path"));
-const fs = __importStar(require("fs")); // Asegúrate de importar fs para eliminar el archivo si es necesario.
+const fs = __importStar(require("fs"));
 // Creando un nuevo libro de trabajo (workbook)
 const generateExcel = (data, res) => {
     const workbook = xlsx.utils.book_new();

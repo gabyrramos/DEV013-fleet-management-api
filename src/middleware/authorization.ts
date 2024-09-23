@@ -1,17 +1,17 @@
-import { Request, Response, NextFunction } from "express";
 import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from "express";
+
 
 //Aqui verificamos el token con un middleware
 export const jwtMiddleware = (secretKey: string) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         const { authorization } = req.headers;
         if (!authorization) {
-            console.error("Error: No authorization header provided");
-            return res.status(401).json({ message: 'Falta el token de autorización' });
-        }
+            return next();
+          }
 
         const [type, token] = authorization.split(' ');
-        if (type.toLowerCase() !== 'bearer' || !token) {
+        if (type.toLowerCase() !== 'bearer') {
             console.error("Error: Formato de token incorrecto");
             return res.status(400).json({ message: 'Formato de token incorrecto' });
         }
@@ -19,12 +19,15 @@ export const jwtMiddleware = (secretKey: string) => {
         try {
             const decodedToken = jwt.verify(token, secretKey) as any;
             console.log("Token decodificado:", decodedToken);
+            
+            // Guardar los datos del usuario en la request para que estén disponibles en los siguientes middlewares
             req.user = {
                 id: decodedToken.id,
                 email: decodedToken.email,
                 role: decodedToken.role  
-            };   
-            return res.status(200).json({message: 'Accceso concedido'});         
+            };
+
+            // Pasar al siguiente middleware o controlador
             next();
         } catch (error) {
             console.error("Token verification error:", error);
@@ -32,6 +35,7 @@ export const jwtMiddleware = (secretKey: string) => {
         }
     };
 };
+
 
 //aqui verificamos si el usuario esta autenticado
 export const isAuthenticated = (req:Request, res:Response, next:NextFunction) => {

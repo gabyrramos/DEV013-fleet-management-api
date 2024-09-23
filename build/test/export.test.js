@@ -1,106 +1,84 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.exportTrajectories = void 0;
-const client_1 = require("@prisma/client");
-const download_script_1 = require("../download_script");
-const nodemailer_1 = __importDefault(require("nodemailer"));
-const prisma = new client_1.PrismaClient();
-const sendEmailWithAttachment = (filePath, recipientEmail) => __awaiter(void 0, void 0, void 0, function* () {
-    const transporter = nodemailer_1.default.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'gabyr.contact@gmail.com', // Tu dirección de correo electrónico
-            pass: 'kkzkulrczxcakzsc', // Generado por Gmail (mejor usar variables de entorno)
-        },
-    });
-    const mailOptions = {
-        from: 'gabyr.contact@gmail.com',
-        to: recipientEmail,
-        subject: 'Enviando Trayectorias',
-        text: 'Adjunto encontrarás el archivo Excel con las trayectorias.',
-        attachments: [
-            {
-                filename: 'trayectorias.xlsx',
-                path: filePath,
-            },
-        ],
-    };
-    try {
-        yield transporter.sendMail(mailOptions);
-        console.log('Correo enviado exitosamente');
-        return true; // Indica éxito
-    }
-    catch (error) {
-        console.error('Error al enviar el correo:', error);
-        return false; // Indica error
-    }
-});
-const exportTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { taxi_id, date, email } = req.query;
-        if (!taxi_id || !date || !email) {
-            return res.status(400).json({ error: 'Se necesitan todos los parámetros para realizar la descarga de trayectorias' });
-        }
-        const taxiID = parseInt(taxi_id);
-        if (isNaN(taxiID)) {
-            return res.status(400).json({ error: 'ID de taxi no válido' });
-        }
-        const searchDate = new Date(date);
-        if (isNaN(searchDate.getTime())) {
-            return res.status(400).json({ error: 'Fecha no válida' });
-        }
-        const endDate = new Date(searchDate);
-        endDate.setDate(endDate.getDate() + 1);
-        const searchTrajectory = yield prisma.trajectory.findMany({
-            where: {
-                taxi_id: taxiID,
-                date: {
-                    gte: searchDate,
-                    lte: endDate
-                },
-            },
-            select: {
-                id: true,
-                taxi_id: true,
-                latitude: true,
-                longitude: true,
-                date: true,
-            },
-        });
-        console.log("Trayectorias encontradas:", searchTrajectory);
-        // Generar el archivo Excel
-        const filePath = (0, download_script_1.generateExcel)(searchTrajectory, res);
-        // Enviar el correo electrónico
-        const emailSent = yield sendEmailWithAttachment(filePath, email);
-        if (!emailSent) {
-            return res.status(500).json({ error: 'Error al enviar el correo' });
-        }
-        // Confirmar la descarga
-        res.download(filePath, 'trayectorias.xlsx', (err) => {
-            if (err) {
-                console.error('Error al descargar el archivo', err);
-                return res.status(500).json({ error: 'Error al descargar el archivo' });
-            }
-            else {
-                console.log('Archivo enviado y correo enviado con éxito');
-            }
-        });
-    }
-    catch (error) {
-        console.error('Error en la búsqueda de ubicaciones de un taxi', error);
-        return res.status(400).json({ error: 'No se puede concretar la búsqueda' });
-    }
-});
-exports.exportTrajectories = exportTrajectories;
+// import { Request, Response } from 'express';
+// import { exportTrajectories } from '../export'; // Ajusta la ruta de tu archivo
+// import prisma from '../db';
+// import { generateExcel } from '../download_script';
+// import nodemailer from 'nodemailer';
+// // Mocks
+// jest.mock('../src/db', () => ({
+//     trajectory: {
+//         findMany: jest.fn(),
+//     },
+// }));
+// jest.mock('../src/download_script', () => ({
+//     generateExcel: jest.fn(),
+// }));
+// jest.mock('nodemailer');
+// describe('exportTrajectories', () => {
+//     let req: Partial<Request>;
+//     let res: Partial<Response>;
+//     let sendMailMock: jest.Mock;
+//     beforeEach(() => {
+//         req = {
+//             query: {
+//                 taxi_id: '1',
+//                 date: '2023-09-20',
+//                 email: 'test@localhost.com',
+//             },
+//         };
+//         res = {
+//             status: jest.fn().mockReturnThis(),
+//             json: jest.fn(),
+//             download: jest.fn((filePath: string, filename?: string, options?: any, callback?: (err?: any) => void) => {
+//                 if (typeof options === 'function') {
+//                     callback = options;
+//                 } else if (typeof filename === 'function') {
+//                     callback = filename;
+//                 }
+//                 if (callback) {
+//                     callback(null); // Simulamos una descarga exitosa
+//                 }
+//             }),
+//         };
+//         // Mock de nodemailer transporter
+//         sendMailMock = jest.fn().mockResolvedValue(true);
+//         (nodemailer.createTransport as jest.Mock).mockReturnValue({
+//             sendMail: sendMailMock,
+//         });
+//     });
+//     afterEach(() => {
+//         jest.clearAllMocks();
+//     });
+//     it('should return 400 if parameters are missing', async () => {
+//         req.query = {}; // Sin parámetros
+//         await exportTrajectories(req as Request, res as Response);
+//         expect(res.status).toHaveBeenCalledWith(400);
+//         expect(res.json).toHaveBeenCalledWith({
+//             error: 'Se necesitan parametros para realizar la descarga de trayectorias',
+//         });
+//     });
+//     it('should return 400 for invalid taxi_id', async () => {
+//         req.query.taxi_id = 'invalid';
+//         await exportTrajectories(req as Request, res as Response);
+//         expect(res.status).toHaveBeenCalledWith(400);
+//         expect(res.json).toHaveBeenCalledWith({ error: 'ID de taxi no válido' });
+//     });
+//     it('should return 400 for invalid date', async () => {
+//         req.query.date = 'invalid-date';
+//         await exportTrajectories(req as Request, res as Response);
+//         expect(res.status).toHaveBeenCalledWith(400);
+//         expect(res.json).toHaveBeenCalledWith({ error: 'Fecha no válida' });
+//     });
+//     it('should call generateExcel and send email after file download', async () => {
+//         const mockTrajectories = [
+//             { id: 1, taxi_id: 1, latitude: 10.123, longitude: -84.123, date: new Date() },
+//         ];
+//         (prisma.trajectory.findMany as jest.Mock).mockResolvedValue(mockTrajectories);
+//         (generateExcel as jest.Mock).mockReturnValue('/path/to/excel/file.xlsx');
+//         await exportTrajectories(req as Request, res as Response);
+//         expect(prisma.trajectory.findMany).toHaveBeenCalledWith({
+//             where: {
+//                 taxi_id: 1,
+//                 date: {
+//                     gte: new Date(req.query.date as string),
+//                     lte: expect.any(D

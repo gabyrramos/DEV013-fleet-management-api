@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supertest_1 = __importDefault(require("supertest"));
-const app_1 = __importDefault(require("../app")); // Asegúrate de tener tu app exportada en un archivo
+const app_1 = __importDefault(require("../app"));
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 describe('Taxi Endpoints', () => {
@@ -62,7 +62,7 @@ describe('Taxi Endpoints', () => {
             expect(res.body).toHaveProperty('error', 'Parametros son requeridos para la busqueda');
         }));
     });
-    describe('GET /taxis/last-trajectories', () => {
+    describe('GET /taxis/lastTrajectories', () => {
         it('should fetch last trajectory for each taxi', () => __awaiter(void 0, void 0, void 0, function* () {
             // Crear taxis y trayectorias
             const taxi = yield prisma.taxi.create({
@@ -76,13 +76,13 @@ describe('Taxi Endpoints', () => {
                     longitude: -74.0060 // Longitud de ejemplo
                 }
             });
-            const res = yield (0, supertest_1.default)(app_1.default).get('/taxis/last-trajectories');
+            const res = yield (0, supertest_1.default)(app_1.default).get('/taxis/lastTrajectories');
             expect(res.statusCode).toEqual(200);
             expect(res.body).toHaveProperty('data');
             expect(res.body.data.length).toBeGreaterThan(0);
         }));
         it('should return error if no trajectories are found', () => __awaiter(void 0, void 0, void 0, function* () {
-            const res = yield (0, supertest_1.default)(app_1.default).get('/taxis/last-trajectories');
+            const res = yield (0, supertest_1.default)(app_1.default).get('/taxis/lastTrajectories');
             expect(res.statusCode).toEqual(200);
             expect(res.body.data.length).toEqual(0);
         }));

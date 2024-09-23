@@ -19,22 +19,23 @@ const jwtMiddleware = (secretKey) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { authorization } = req.headers;
         if (!authorization) {
-            console.error("Error: No authorization header provided");
-            return res.status(401).json({ message: 'Falta el token de autorización' });
+            return next();
         }
         const [type, token] = authorization.split(' ');
-        if (type.toLowerCase() !== 'bearer' || !token) {
+        if (type.toLowerCase() !== 'bearer') {
             console.error("Error: Formato de token incorrecto");
             return res.status(400).json({ message: 'Formato de token incorrecto' });
         }
         try {
             const decodedToken = jsonwebtoken_1.default.verify(token, secretKey);
             console.log("Token decodificado:", decodedToken);
+            // Guardar los datos del usuario en la request para que estén disponibles en los siguientes middlewares
             req.user = {
                 id: decodedToken.id,
                 email: decodedToken.email,
                 role: decodedToken.role
             };
+            // Pasar al siguiente middleware o controlador
             next();
         }
         catch (error) {

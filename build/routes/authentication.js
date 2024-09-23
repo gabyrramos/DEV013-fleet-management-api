@@ -18,12 +18,12 @@ const db_1 = __importDefault(require("../db"));
 const bcrypt = require('bcrypt');
 const loginFunction = (app) => {
     const secretKey = 'secret_key';
-    //  const adminUser = {
-    //      id: 1,
-    //      email: 'admin@localhost',
-    //      password: '12345',
-    //      role: 'user'
-    //   };
+    const adminUser = {
+        id: 1,
+        email: 'admin@localhost',
+        password: '12345',
+        role: 'user'
+    };
     //const hashedPassword = bcrypt.hashSync(user.password, 10);
     app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
