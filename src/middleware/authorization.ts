@@ -19,12 +19,12 @@ export const jwtMiddleware = (secretKey: string) => {
         try {
             const decodedToken = jwt.verify(token, secretKey) as any;
             console.log("Token decodificado:", decodedToken);
-
             req.user = {
                 id: decodedToken.id,
                 email: decodedToken.email,
                 role: decodedToken.role  
-            };            
+            };   
+            return res.status(200).json({message: 'Accceso concedido'});         
             next();
         } catch (error) {
             console.error("Token verification error:", error);

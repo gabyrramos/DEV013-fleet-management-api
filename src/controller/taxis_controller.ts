@@ -15,8 +15,6 @@ export const getAllTaxis = async (req: Request, res: Response): Promise<void> =>
             take: size,
         });
         console.log("Aqui probando el resultado de taxis:", taxis);
-
-
         const totalTaxis = await prisma.taxi.count();
         const totalPages = Math.ceil(totalTaxis / size);
 
@@ -28,15 +26,14 @@ export const getAllTaxis = async (req: Request, res: Response): Promise<void> =>
             totalTaxis
         });
     } catch (error) {
-       res.status(400).json({ 'Page or limit is not valid': error });
+        console.error("Error devolviendo la lista de taxis", error);
+        res.status(400).json({ 'Page or limit is not valid': error });
     }
 };
 
 export const filterTaxis = async (req: Request, res: Response) => {
     try {
-
         const { search } = req.query;
-
         if (!search) {
             return res.status(400).json({ error: 'Parametros son requeridos para la busqueda' });
         }
@@ -51,7 +48,6 @@ export const filterTaxis = async (req: Request, res: Response) => {
                 ]
             }
         });
-
         console.log("Aqui viendo si funciona el search de id o plate:", searchTaxi);
         return res.status(200).json({
             data: searchTaxi,

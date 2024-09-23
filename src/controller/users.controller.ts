@@ -45,7 +45,6 @@ export const postUser = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.error('Error:', error);
-
         res.status(500).json({ error: 'Hubo un error con la operación' });
     }
 }
@@ -124,7 +123,7 @@ export const deleteUser = async (req: Request, res: Response) => {
                 where: { name: identifier },
             });
             console.log("Usuario fue eliminado", eliminarUser);
-            return res.status(200).json({ "Usuarios eliminados": eliminarUser });
+            return res.status(200).json({ "Usuario eliminado": eliminarUser });
         }
     } catch (error) {
         console.error("Error al tratar de eliminar usuario", error);

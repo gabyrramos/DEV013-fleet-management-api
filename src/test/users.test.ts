@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app'; // Asegúrate de tener tu app exportada
+import app from '../app'; 
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
@@ -155,8 +155,8 @@ describe('User Endpoints', () => {
 
             const res = await request(app).delete(`/users/John Doe`);
             expect(res.statusCode).toEqual(200);
-            expect(res.body).toHaveProperty('Usuarios eliminados');
-            expect(res.body['Usuarios eliminados'].count).toBe(2);
+            expect(res.body).toHaveProperty('Usuario eliminado');
+            expect(res.body['Usuario eliminado'].count).toBe(2);
         });
 
         it('should return 404 if user is not found', async () => {

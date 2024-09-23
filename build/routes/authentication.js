@@ -41,6 +41,7 @@ const loginFunction = (app) => {
             ;
             //aqui validamos la contraseña
             const validateAdmin = yield bcrypt.compare(password, admin.password);
+            console.log("Admin validado", validateAdmin);
             if (!validateAdmin) {
                 return res.status(404).json({ message: "Contraseña incorrecta" });
             }

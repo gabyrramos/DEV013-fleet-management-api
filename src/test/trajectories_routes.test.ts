@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app'; // Asegúrate de importar la aplicación Express
+import app from '../app'; 
 import { PrismaClient } from '@prisma/client';
 
 // Mock de PrismaClient

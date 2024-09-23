@@ -2,7 +2,6 @@ import request from 'supertest';
 import app from '../app'; // Importamos la app principal
 import prisma from '../db';
 import { PrismaClient } from '@prisma/client';
-import prismaMock from './mocks/prisma';
 
 // Mockeamos PrismaClient y las rutas
 jest.mock('../db', () => ({

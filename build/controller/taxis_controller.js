@@ -33,7 +33,8 @@ const getAllTaxis = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
     }
     catch (error) {
-        res.status(400).json({ 'Page or limit is not valid': error });
+        console.error("Error devolviendo la lista de taxis", error);
+        res.status(500).json({ 'Error interno': error });
     }
 });
 exports.getAllTaxis = getAllTaxis;

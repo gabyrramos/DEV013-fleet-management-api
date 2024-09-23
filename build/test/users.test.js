@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supertest_1 = __importDefault(require("supertest"));
-const app_1 = __importDefault(require("../app")); // Asegúrate de tener tu app exportada
+const app_1 = __importDefault(require("../app"));
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const prisma = new client_1.PrismaClient();
@@ -151,8 +151,8 @@ describe('User Endpoints', () => {
             });
             const res = yield (0, supertest_1.default)(app_1.default).delete(`/users/John Doe`);
             expect(res.statusCode).toEqual(200);
-            expect(res.body).toHaveProperty('Usuarios eliminados');
-            expect(res.body['Usuarios eliminados'].count).toBe(2);
+            expect(res.body).toHaveProperty('Usuario eliminado');
+            expect(res.body['Usuario eliminado'].count).toBe(2);
         }));
         it('should return 404 if user is not found', () => __awaiter(void 0, void 0, void 0, function* () {
             const res = yield (0, supertest_1.default)(app_1.default).delete(`/users/9999`);

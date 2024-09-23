@@ -5,12 +5,12 @@ const bcrypt = require('bcrypt');
 
 export const loginFunction = (app:Application) => {
     const secretKey = 'secret_key';
-    //  const adminUser = {
-    //      id: 1,
-    //      email: 'admin@localhost',
-    //      password: '12345',
-    //      role: 'user'
-    //   };
+      const adminUser = {
+          id: 1,
+          email: 'admin@localhost',
+        password: '12345',
+          role: 'user'
+       };
     
      //const hashedPassword = bcrypt.hashSync(user.password, 10);
 
@@ -30,6 +30,7 @@ export const loginFunction = (app:Application) => {
 
             //aqui validamos la contraseña
             const validateAdmin = await bcrypt.compare(password, admin.password)
+            console.log("Admin validado", validateAdmin);
             if (!validateAdmin) {
                 return res.status(404).json({ message: "Contraseña incorrecta" })
             }

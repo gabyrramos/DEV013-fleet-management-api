@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app';// Asegúrate de tener tu app exportada en un archivo
+import app from '../app';
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -59,7 +59,7 @@ describe('Taxi Endpoints', () => {
     });
   });
 
-  describe('GET /taxis/last-trajectories', () => {
+  describe('GET /taxis/lastTrajectories', () => {
     it('should fetch last trajectory for each taxi', async () => {
       // Crear taxis y trayectorias
       const taxi = await prisma.taxi.create({
@@ -74,16 +74,14 @@ describe('Taxi Endpoints', () => {
           longitude: -74.0060 // Longitud de ejemplo
         }
       });
-
-
-      const res = await request(app).get('/taxis/last-trajectories');
+      const res = await request(app).get('/taxis/lastTrajectories');
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty('data');
       expect(res.body.data.length).toBeGreaterThan(0);
     });
 
     it('should return error if no trajectories are found', async () => {
-      const res = await request(app).get('/taxis/last-trajectories');
+      const res = await request(app).get('/taxis/lastTrajectories');
       expect(res.statusCode).toEqual(200);
       expect(res.body.data.length).toEqual(0);
     });

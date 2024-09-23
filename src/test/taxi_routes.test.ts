@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app'; // Importamos la app principal
+import app from '../app'; 
 import { PrismaClient } from '@prisma/client';
 
 // Mockeamos PrismaClient y sus métodos

@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app'; // Asegúrate de tener tu app exportada
+import app from '../app'; 
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

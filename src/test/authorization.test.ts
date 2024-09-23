@@ -1,8 +1,8 @@
 import request from 'supertest';
-import app from '../app'; // Asegúrate de que tu app esté exportada
+import app from '../app'; 
 import jwt from 'jsonwebtoken';
 
-const secretKey = 'test_secret_key'; // Cambia esto por tu clave secreta de prueba
+const secretKey = 'test_secret_key'; 
 
 // Simulando un usuario y token
 const user = {

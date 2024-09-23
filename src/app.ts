@@ -18,7 +18,7 @@ app.use('/api/taxis', taxisRoutes);
 app.use('/api/trajectories', trajectoriesRoutes);
 app.use('/api/users', requireAuth, requireAdmin, userRoutes);
 
-//registrando el endpoitn de log in
+//registrando el endpoint de log in
 loginFunction(app);
 
 //Estableciendo el puerto://

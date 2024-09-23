@@ -111,7 +111,7 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 where: { name: identifier },
             });
             console.log("Usuario fue eliminado", eliminarUser);
-            return res.status(200).json({ "Usuarios eliminados": eliminarUser });
+            return res.status(200).json({ "Usuario eliminado": eliminarUser });
         }
     }
     catch (error) {

@@ -1,5 +1,5 @@
 import request from 'supertest';
-import  app from '../app'; // Asegúrate de que tu app esté exportada
+import  app from '../app'; 
 import prisma from '../db';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
