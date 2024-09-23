@@ -12,7 +12,7 @@ const sendEmailWithAttachment = async (filePath: string, recipientEmail: string)
         service: 'gmail', // O el servicio que estés usando
         auth: {
             user: 'gabyr.contact@gmail.com', // Tu dirección de correo electrónico
-            pass: 'kkzkulrczxcakzsc', // Tu contraseña (considera usar OAuth2 o un app password)
+            pass: 'kkzkulrczxcakzsc', //generado por gmail
         },
     });
 
@@ -20,7 +20,7 @@ const sendEmailWithAttachment = async (filePath: string, recipientEmail: string)
     const mailOptions = {
         from: 'gabyr.contact@gmail.com',
         to: 'gabyr.contact@gmail.com',
-        subject: 'Trayectorias de Taxi',
+        subject: 'Enviando Trayectorias',
         text: 'Adjunto encontrarás el archivo Excel con las trayectorias.',
         attachments: [
             {
@@ -45,10 +45,9 @@ export const exportTrajectories = async (req: Request, res: Response) => {
     try {
         const { taxi_id, date, email } = req.query;
 
-        if (!taxi_id && date && email) {
-            return res.status(400).json({ error: 'Se necesitan parametros para realizar la descarga de trajectorias' });
-        };
-
+        if (!taxi_id && date && email ) {
+            return res.status(400).json({ error: 'Se necesitan parametros para realizar la descarga de trayectorias' });
+        }
         const taxiID = parseInt(taxi_id as string);
         if (isNaN(taxiID)) {
             return res.status(400).json({ error: 'ID de taxi no válido' });
@@ -78,22 +77,25 @@ export const exportTrajectories = async (req: Request, res: Response) => {
 
         });
         console.log("Aqui viendo si busqueda por id y fecha funciona:", searchTrajectory);
-        const filePath = path.join(__dirname, 'trayectorias.xlsx');
-        await generateExcel(searchTrajectory, res);
-
-        const emailSent = await sendEmailWithAttachment(filePath, email as string);
-        if (emailSent) {
-            return res.status(200).json({ message: 'Correo enviado exitosamente' });
-        } else {
-            return res.status(500).json({ error: 'No se pudo enviar el correo' });
-        }
-
+        const filePath = generateExcel(searchTrajectory, res);
+        
+        // Responder la descarga del archivo
+        res.download(filePath, 'trayectorias.xlsx', async (err) => {
+            if (err) {
+                console.error('Error al descargar el archivo', err);
+                return res.status(500).json({ error: 'Error al descargar el archivo' });
+            } else {
+                // Enviar el correo solo después de descargar el archivo
+                const emailSent = await sendEmailWithAttachment(filePath, email as string);
+                if (!emailSent) {
+                    console.error('Error al enviar el correo');
+                }
+            }
+        });
     } catch (error) {
-        console.error('Error en la busqueda de ubicaciones de un taxi', error);
-        return res.status(400).json({ error: 'No se puede concretar la busqueda!' })
-
+        console.error('Error en la búsqueda de ubicaciones de un taxi', error);
+        return res.status(400).json({ error: 'No se puede concretar la búsqueda' });
     }
 };
-
 
 

@@ -54,12 +54,12 @@ const filterTaxis = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             }
         });
         console.log("Aqui viendo si funciona el search de id o plate:", searchTaxi);
-        res.status(200).json({
+        return res.status(200).json({
             data: searchTaxi,
         });
     }
     catch (error) {
-        res.status(400).json({ 'Busqueda no valida': error });
+        return res.status(400).json({ 'Busqueda no valida': error });
     }
 });
 exports.filterTaxis = filterTaxis;
@@ -86,13 +86,13 @@ const getAllLastTrajectories = (req, res) => __awaiter(void 0, void 0, void 0, f
             }
         })));
         const filteredTaxisLastTrajectory = taxisLastTrajectory.filter(t => t !== null);
-        res.status(200).json({
+        return res.status(200).json({
             data: filteredTaxisLastTrajectory,
         });
     }
     catch (error) {
         console.error("Tenemos un error buscando las ultimas trayectorias");
-        res.status(400).json({ error: "Error en la busqueda de ultimas trayectorias" });
+        return res.status(400).json({ error: "Error en la busqueda de ultimas trayectorias" });
     }
 });
 exports.getAllLastTrajectories = getAllLastTrajectories;

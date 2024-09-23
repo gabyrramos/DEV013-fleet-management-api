@@ -37,11 +37,12 @@ const generateExcel = (data, res) => {
     xlsx.writeFile(workbook, filePath);
     // Confirmando la peticion y pidiendo de descargue
     console.log(`Archivo Excel creado: ${filePath}`);
-    return res.download(filePath, 'trayectorias.xlsx', (err) => {
-        if (err) {
-            console.error('Error al descargar el archivo', err);
-            return res.status(500).json({ error: 'Error al descargar el archivo' });
-        }
-    });
+    return filePath;
+    //return res.download(filePath, 'trayectorias.xlsx', (err)=> {
+    //     if (err) {
+    //         console.error('Error al descargar el archivo', err);
+    //         return res.status(500).json({error: 'Error al descargar el archivo'});
+    //     }
+    // });
 };
 exports.generateExcel = generateExcel;

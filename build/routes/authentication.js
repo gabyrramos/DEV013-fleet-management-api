@@ -18,13 +18,13 @@ const db_1 = __importDefault(require("../db"));
 const bcrypt = require('bcrypt');
 const loginFunction = (app) => {
     const secretKey = 'secret_key';
-    const adminUser = {
-        id: 1,
-        email: 'admin@localhost',
-        password: '12345',
-        role: 'user'
-    };
-    // const hashedPassword = bcrypt.hashSync(user.password, 10);
+    //  const adminUser = {
+    //      id: 1,
+    //      email: 'admin@localhost',
+    //      password: '12345',
+    //      role: 'user'
+    //   };
+    //const hashedPassword = bcrypt.hashSync(user.password, 10);
     app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const { email, password } = req.body;
@@ -35,14 +35,14 @@ const loginFunction = (app) => {
                 where: { email },
             });
             if (!admin) {
-                console.error("No se encontro el usuario", Error);
-                return res.status(400).json({ "No existe un usuario con esos datos": Error });
+                console.error("No se encontro el usuario");
+                return res.status(404).json({ message: "No existe un usuario con esos datos" });
             }
             ;
             //aqui validamos la contraseña
             const validateAdmin = yield bcrypt.compare(password, admin.password);
             if (!validateAdmin) {
-                return res.status(404).json({ "No se pudo validar la contraseña": Error });
+                return res.status(404).json({ message: "Contraseña incorrecta" });
             }
             // Generamos token
             const token = jsonwebtoken_1.default.sign({ id: admin.id, email: admin.email, role: admin.role }, secretKey, { expiresIn: '1h' });
@@ -51,9 +51,8 @@ const loginFunction = (app) => {
         }
         catch (error) {
             console.error("No se pudo generar token", error);
-            return res.status(500).send("Algo salio mal");
+            return res.status(500).json({ message: "Algo salio mal" });
         }
-        ;
     }));
 };
 exports.loginFunction = loginFunction;

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import * as xlsx from 'xlsx';
 import * as path from 'path';
 
@@ -13,7 +13,7 @@ interface data {
 };
 
 // Creando un nuevo libro de trabajo (workbook)
-export const  generateExcel = ( data: data[], res: Response): void => {
+export const generateExcel = ( data: data[], res: Response): string => {
     const workbook = xlsx.utils.book_new();
     const worksheet = xlsx.utils.json_to_sheet(data);
     xlsx.utils.book_append_sheet(workbook, worksheet, 'Trayectorias');
@@ -24,11 +24,12 @@ export const  generateExcel = ( data: data[], res: Response): void => {
     
     // Confirmando la peticion y pidiendo de descargue
     console.log(`Archivo Excel creado: ${filePath}`);
-    return res.download(filePath, 'trayectorias.xlsx', (err)=> {
-        if (err) {
-            console.error('Error al descargar el archivo', err);
-            return res.status(500).json({error: 'Error al descargar el archivo'});
-        }
-    });
+    return filePath;
+    //return res.download(filePath, 'trayectorias.xlsx', (err)=> {
+    //     if (err) {
+    //         console.error('Error al descargar el archivo', err);
+    //         return res.status(500).json({error: 'Error al descargar el archivo'});
+    //     }
+    // });
 }
 

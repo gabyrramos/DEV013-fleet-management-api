@@ -53,20 +53,16 @@ export const postUser = async (req: Request, res: Response) => {
 
 
 export const getUsers = async (req: Request, res: Response) => {
-
+    console.log("User autenticado:", req.user);
     try {
         const users = await prisma.users.findMany();
         console.log("Aqui probando respuesta usuarios:", users);
         res.status(200).json(users);
-
     } catch (error) {
         console.error(error);
-
         res.status(400).json({ error: 'Error al buscar usuarios' });
-
     }
-
-}
+};
 
 export const editUser = async (req: Request, res: Response) => {
 

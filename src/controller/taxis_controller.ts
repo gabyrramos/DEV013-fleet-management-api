@@ -28,7 +28,7 @@ export const getAllTaxis = async (req: Request, res: Response): Promise<void> =>
             totalTaxis
         });
     } catch (error) {
-        res.status(400).json({ 'Page or limit is not valid': error });
+       res.status(400).json({ 'Page or limit is not valid': error });
     }
 };
 
@@ -53,11 +53,11 @@ export const filterTaxis = async (req: Request, res: Response) => {
         });
 
         console.log("Aqui viendo si funciona el search de id o plate:", searchTaxi);
-        res.status(200).json({
+        return res.status(200).json({
             data: searchTaxi,
         });
     } catch (error) {
-        res.status(400).json({ 'Busqueda no valida': error });
+       return res.status(400).json({ 'Busqueda no valida': error });
     }
 };
 
@@ -87,14 +87,13 @@ export const getAllLastTrajectories = async (req: Request, res: Response) => {
             })
         );
         const filteredTaxisLastTrajectory = taxisLastTrajectory.filter(t => t !== null);
-
-        res.status(200).json({
+        return res.status(200).json({
             data: filteredTaxisLastTrajectory,
         });
+        
     } catch (error) {
         console.error("Tenemos un error buscando las ultimas trayectorias");
-
-        res.status(400).json({ error: "Error en la busqueda de ultimas trayectorias" });
+        return res.status(400).json({ error: "Error en la busqueda de ultimas trayectorias" });
 
     }
 }

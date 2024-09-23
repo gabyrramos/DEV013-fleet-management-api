@@ -4,8 +4,7 @@ import trajectoriesRoutes from './routes/trajectories';
 import userRoutes from './routes/user';
 import { PrismaClient } from '@prisma/client'
 import { loginFunction } from './routes/authentication';
-
-
+import { requireAuth, requireAdmin } from './middleware/authorization';
 
 const app: Application = express();
 
@@ -17,8 +16,7 @@ const prisma = new PrismaClient()
 app.use(express.json());
 app.use('/api/taxis', taxisRoutes);
 app.use('/api/trajectories', trajectoriesRoutes);
-app.use('/api/users', userRoutes);
-
+app.use('/api/users', requireAuth, requireAdmin, userRoutes);
 
 //registrando el endpoitn de log in
 loginFunction(app);
@@ -29,4 +27,3 @@ console.log('Escuchando el siguiente puerto :', PORT);
 });
 
 export default app;
-

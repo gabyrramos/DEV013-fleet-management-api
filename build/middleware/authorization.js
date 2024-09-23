@@ -14,17 +14,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.requireAdmin = exports.requireAuth = exports.isAdmin = exports.isAuthenticated = exports.jwtMiddleware = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const secretKey = 'secret_key';
 //Aqui verificamos el token con un middleware
 const jwtMiddleware = (secretKey) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const { authorization } = req.headers;
         if (!authorization) {
+            console.error("Error: No authorization header provided");
             return res.status(401).json({ message: 'Falta el token de autorización' });
         }
-        //analyzamos el header para confirmar que tienen bearer y token
         const [type, token] = authorization.split(' ');
-        if (type.toLowerCase() !== 'bearer') {
+        if (type.toLowerCase() !== 'bearer' || !token) {
+            console.error("Error: Formato de token incorrecto");
             return res.status(400).json({ message: 'Formato de token incorrecto' });
         }
         try {
@@ -34,19 +34,19 @@ const jwtMiddleware = (secretKey) => {
                 email: decodedToken.email,
                 role: decodedToken.role
             };
+            console.log(req.user);
             next();
-            console.log("Aqui el decoded token:", decodedToken);
         }
         catch (error) {
             console.error("Token verification error:", error);
             return res.status(403).json({ message: 'No tienes permiso para acceder' });
         }
-        next();
     });
 };
 exports.jwtMiddleware = jwtMiddleware;
 //aqui verificamos si el usuario esta autenticado
 const isAuthenticated = (req, res, next) => {
+    console.log(req.user);
     if (!req.user) {
         return res.status(401).json({ message: 'No estás autenticado' });
     }
