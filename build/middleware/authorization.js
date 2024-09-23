@@ -29,12 +29,12 @@ const jwtMiddleware = (secretKey) => {
         }
         try {
             const decodedToken = jsonwebtoken_1.default.verify(token, secretKey);
+            console.log("Token decodificado:", decodedToken);
             req.user = {
                 id: decodedToken.id,
                 email: decodedToken.email,
                 role: decodedToken.role
             };
-            console.log(req.user);
             next();
         }
         catch (error) {
@@ -48,7 +48,7 @@ exports.jwtMiddleware = jwtMiddleware;
 const isAuthenticated = (req, res, next) => {
     console.log(req.user);
     if (!req.user) {
-        return res.status(401).json({ message: 'No estás autenticado' });
+        return res.status(401).json({ message: 'Falta el token de autorización' });
     }
     next();
 };
@@ -70,10 +70,12 @@ const requireAuth = (req, res, next) => {
 exports.requireAuth = requireAuth;
 //requiere que el usuario sea el admin
 const requireAdmin = (req, res, next) => {
-    (0, exports.isAuthenticated)(req, res, (err) => {
-        if (err)
-            return res.status(401).json({ message: 'No autorizado' });
-        (0, exports.isAdmin)(req, res, next);
-    });
+    if (!req.user) {
+        return res.status(401).json({ message: 'No estás autenticado' });
+    }
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acceso restringido: no eres administrador' });
+    }
+    next();
 };
 exports.requireAdmin = requireAdmin;

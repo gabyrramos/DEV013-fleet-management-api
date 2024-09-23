@@ -13,25 +13,78 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supertest_1 = __importDefault(require("supertest"));
-const app_1 = __importDefault(require("../app"));
-// Importa tu aplicación Express
-describe('GET /taxis', () => {
-    it('should return all taxis', () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app_1.default).get('/taxis');
-        expect(response.status).toBe(200);
+const app_1 = __importDefault(require("../app")); // Asegúrate de tener tu app exportada en un archivo
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
+describe('Taxi Endpoints', () => {
+    // Mock para limpiar la base de datos antes de cada test
+    beforeEach(() => __awaiter(void 0, void 0, void 0, function* () {
+        yield prisma.taxi.deleteMany({});
+        yield prisma.trajectory.deleteMany({});
     }));
-    it('should return not found when the limit is less than 10', () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app_1.default).get("/taxis?page=1&limit=9").send();
-        expect(response.statusCode).toBe(400);
+    afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
+        yield prisma.$disconnect();
     }));
-    it('should return not found for a non-existing page', () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app_1.default).get('/taxis?page=1000&limit=10');
-        expect(response.status).toBe(404);
-        expect(response.body.message).toBe("No se encontraron usuarios");
-    }));
-    it('should return taxis in JSON format', () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app_1.default).get('/taxis?page=1&limit=10');
-        expect(response.status).toBe(200);
-        expect(response.headers['content-type']).toEqual(expect.stringContaining('application/json'));
-    }));
+    describe('GET /taxis', () => {
+        it('should fetch all taxis with pagination', () => __awaiter(void 0, void 0, void 0, function* () {
+            // Preparar los datos
+            yield prisma.taxi.createMany({
+                data: [
+                    { id: 1, plate: 'ABC123' },
+                    { id: 2, plate: 'XYZ789' }
+                ]
+            });
+            const res = yield (0, supertest_1.default)(app_1.default).get('/taxis?page=1&size=2');
+            expect(res.statusCode).toEqual(200);
+            expect(res.body).toHaveProperty('data');
+            expect(res.body.data.length).toEqual(2);
+        }));
+        it('should return error for invalid pagination parameters', () => __awaiter(void 0, void 0, void 0, function* () {
+            const res = yield (0, supertest_1.default)(app_1.default).get('/taxis?page=invalid&size=10');
+            expect(res.statusCode).toEqual(400);
+            expect(res.body).toHaveProperty('Page or limit is not valid');
+        }));
+    });
+    describe('GET /taxis/filter', () => {
+        it('should filter taxis by id or plate', () => __awaiter(void 0, void 0, void 0, function* () {
+            // Insertar taxis
+            yield prisma.taxi.create({
+                data: { id: 1, plate: 'ABC123' }
+            });
+            const res = yield (0, supertest_1.default)(app_1.default).get('/taxis/filter?search=ABC123');
+            expect(res.statusCode).toEqual(200);
+            expect(res.body).toHaveProperty('data');
+            expect(res.body.data[0]).toHaveProperty('plate', 'ABC123');
+        }));
+        it('should return error if no search param is provided', () => __awaiter(void 0, void 0, void 0, function* () {
+            const res = yield (0, supertest_1.default)(app_1.default).get('/taxis/filter');
+            expect(res.statusCode).toEqual(400);
+            expect(res.body).toHaveProperty('error', 'Parametros son requeridos para la busqueda');
+        }));
+    });
+    describe('GET /taxis/last-trajectories', () => {
+        it('should fetch last trajectory for each taxi', () => __awaiter(void 0, void 0, void 0, function* () {
+            // Crear taxis y trayectorias
+            const taxi = yield prisma.taxi.create({
+                data: { id: 1, plate: 'ABC123' }
+            });
+            yield prisma.trajectory.create({
+                data: {
+                    taxi_id: taxi.id,
+                    date: new Date(),
+                    latitude: 40.7128, // Latitud de ejemplo
+                    longitude: -74.0060 // Longitud de ejemplo
+                }
+            });
+            const res = yield (0, supertest_1.default)(app_1.default).get('/taxis/last-trajectories');
+            expect(res.statusCode).toEqual(200);
+            expect(res.body).toHaveProperty('data');
+            expect(res.body.data.length).toBeGreaterThan(0);
+        }));
+        it('should return error if no trajectories are found', () => __awaiter(void 0, void 0, void 0, function* () {
+            const res = yield (0, supertest_1.default)(app_1.default).get('/taxis/last-trajectories');
+            expect(res.statusCode).toEqual(200);
+            expect(res.body.data.length).toEqual(0);
+        }));
+    });
 });

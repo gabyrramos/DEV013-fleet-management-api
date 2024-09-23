@@ -51,6 +51,7 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.postUser = postUser;
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("User autenticado:", req.user);
     try {
         const users = yield prisma.users.findMany();
         console.log("Aqui probando respuesta usuarios:", users);

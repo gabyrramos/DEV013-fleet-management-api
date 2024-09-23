@@ -37,7 +37,7 @@ export const jwtMiddleware = (secretKey: string) => {
 export const isAuthenticated = (req:Request, res:Response, next:NextFunction) => {
     console.log(req.user);
     if (!req.user) {        
-        return res.status(401).json({ message: 'No estás autenticado' });
+        return res.status(401).json({ message: 'Falta el token de autorización' });
     }
     next();
 };
@@ -56,9 +56,12 @@ export const requireAuth = (req:Request, res:Response, next:NextFunction) => {
 };
 
 //requiere que el usuario sea el admin
-export const requireAdmin = (req:Request, res:Response, next:NextFunction) => {
-    isAuthenticated(req, res, (err: any) => {
-        if (err) return res.status(401).json({ message: 'No autorizado' });
-        isAdmin(req, res, next);
-    });
+export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+        return res.status(401).json({ message: 'No estás autenticado' });
+    }
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acceso restringido: no eres administrador' });
+    }
+    next();
 };
