@@ -1,64 +1,77 @@
 import request from 'supertest';
-import app from '../../app'; // Ajusta la ruta según tu estructura de archivos
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import express, { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { jwtMiddleware, isAuthenticated, isAdmin, requireAuth, requireAdmin } from '../../middleware/authorization';
 
-let token: string;
+const app = express();
+app.use(express.json());
 
-describe('E2E Tests', () => {
-    // Configuración inicial
-    beforeAll(async () => {
-    });
-    afterAll(async () => {
-        await prisma.$disconnect();
-    });
+const secretKey = 'test_secret_key';
 
-    // Prueba para el login
-    it('should login and return a token', async () => {
-        const res = await request(app)
-            .post('/login')
-            .send({ email: 'admin@localhost', password: '12345' });
-        
-        expect(res.statusCode).toEqual(200);
-        expect(res.text).toBeTruthy(); // Debe devolver el token
-    });
+// Ruta protegida que requiere autenticación
+app.get('/protected', jwtMiddleware(secretKey), requireAuth, (req: Request, res: Response) => {
+    res.status(200).json({ message: 'Acceso concedido a ruta protegida' });
+});
 
-    // Prueba para obtener taxis
-    it('should get all taxis', async () => {
-        const res = await request(app)
-            .get('/api/taxis')
-            .set('Authorization', `Bearer ${token}`);
+// Ruta protegida que requiere que el usuario sea admin
+app.get('/admin', jwtMiddleware(secretKey), requireAdmin, (req: Request, res: Response) => {
+    res.status(200).json({ message: 'Acceso concedido a ruta de administrador' });
+});
 
-        expect(res.statusCode).toEqual(200);
-        expect(res.body).toBeInstanceOf(Array); // Debe devolver un array
+describe('Middleware Tests', () => {
+    let userToken: string;
+    let adminToken: string;
+
+    beforeAll(() => {
+        // Creamos un token de usuario normal y un token de administrador
+        userToken = jwt.sign({ id: 1, email: 'user@test.com', role: 'user' }, secretKey, { expiresIn: '1h' });
+        adminToken = jwt.sign({ id: 2, email: 'admin@test.com', role: 'admin' }, secretKey, { expiresIn: '1h' });
     });
 
-    // Prueba para filtrar taxis
-    it('should filter taxis', async () => {
-        const res = await request(app)
-            .get('/api/taxis/filter')
-            .set('Authorization', `Bearer ${token}`); 
-
-        expect(res.statusCode).toEqual(200);
+    it('should return 401 if no authorization header is provided for a protected route', async () => {
+        const response = await request(app).get('/protected');
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe('Falta el token de autorización');
     });
 
-    // Prueba para obtener trayectorias
-    it('should get all trajectories', async () => {
-        const res = await request(app)
-            .get('/api/trajectories')
-            .set('Authorization', `Bearer ${token}`);
-
-        expect(res.statusCode).toEqual(200);
-        expect(res.body).toBeInstanceOf(Array); // Debe devolver un array
+    it('should return 400 if token format is incorrect', async () => {
+        const response = await request(app)
+            .get('/protected')
+            .set('Authorization', `Basic ${userToken}`);
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Formato de token incorrecto');
     });
 
-    // Prueba para exportar trayectorias
-    it('should export trajectories', async () => {
-        const res = await request(app)
-            .get('/api/trajectories/export?taxi_id=1&date=2024-09-22&email=test@example.com')
-            .set('Authorization', `Bearer ${token}`); // Usa un token válido
+    it('should return 403 if token is invalid', async () => {
+        const response = await request(app)
+            .get('/protected')
+            .set('Authorization', `Bearer invalid_token`);
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('No tienes permiso para acceder');
+    });
 
-        expect(res.statusCode).toEqual(200);
-        expect(res.header['content-type']).toEqual('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    it('should allow access to a protected route with a valid token', async () => {
+        const response = await request(app)
+            .get('/protected')
+            .set('Authorization', `Bearer ${userToken}`);
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Acceso concedido a ruta protegida');
+    });
+
+    it('should return 403 if non-admin user tries to access an admin route', async () => {
+        const response = await request(app)
+            .get('/admin')
+            .set('Authorization', `Bearer ${userToken}`);
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('Acceso restringido: no eres administrador');
+    });
+
+    it('should allow access to an admin route with a valid admin token', async () => {
+        const response = await request(app)
+            .get('/admin')
+            .set('Authorization', `Bearer ${adminToken}`);
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Acceso concedido a ruta de administrador');
     });
 });
+

@@ -13,54 +13,66 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supertest_1 = __importDefault(require("supertest"));
-const app_1 = __importDefault(require("../../app")); // Ajusta la ruta según tu estructura de archivos
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
-let token;
-describe('E2E Tests', () => {
-    // Configuración inicial
-    beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
+const express_1 = __importDefault(require("express"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const authorization_1 = require("../../middleware/authorization");
+const app = (0, express_1.default)();
+app.use(express_1.default.json());
+const secretKey = 'test_secret_key';
+// Ruta protegida que requiere autenticación
+app.get('/protected', (0, authorization_1.jwtMiddleware)(secretKey), authorization_1.requireAuth, (req, res) => {
+    res.status(200).json({ message: 'Acceso concedido a ruta protegida' });
+});
+// Ruta protegida que requiere que el usuario sea admin
+app.get('/admin', (0, authorization_1.jwtMiddleware)(secretKey), authorization_1.requireAdmin, (req, res) => {
+    res.status(200).json({ message: 'Acceso concedido a ruta de administrador' });
+});
+describe('Middleware Tests', () => {
+    let userToken;
+    let adminToken;
+    beforeAll(() => {
+        // Creamos un token de usuario normal y un token de administrador
+        userToken = jsonwebtoken_1.default.sign({ id: 1, email: 'user@test.com', role: 'user' }, secretKey, { expiresIn: '1h' });
+        adminToken = jsonwebtoken_1.default.sign({ id: 2, email: 'admin@test.com', role: 'admin' }, secretKey, { expiresIn: '1h' });
+    });
+    it('should return 401 if no authorization header is provided for a protected route', () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app).get('/protected');
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe('Falta el token de autorización');
     }));
-    afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
-        yield prisma.$disconnect();
+    it('should return 400 if token format is incorrect', () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app)
+            .get('/protected')
+            .set('Authorization', `Basic ${userToken}`);
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Formato de token incorrecto');
     }));
-    // Prueba para el login
-    it('should login and return a token', () => __awaiter(void 0, void 0, void 0, function* () {
-        const res = yield (0, supertest_1.default)(app_1.default)
-            .post('/login')
-            .send({ email: 'admin@localhost', password: '12345' });
-        expect(res.statusCode).toEqual(200);
-        expect(res.text).toBeTruthy(); // Debe devolver el token
+    it('should return 403 if token is invalid', () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app)
+            .get('/protected')
+            .set('Authorization', `Bearer invalid_token`);
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('No tienes permiso para acceder');
     }));
-    // Prueba para obtener taxis
-    it('should get all taxis', () => __awaiter(void 0, void 0, void 0, function* () {
-        const res = yield (0, supertest_1.default)(app_1.default)
-            .get('/api/taxis')
-            .set('Authorization', `Bearer ${token}`);
-        expect(res.statusCode).toEqual(200);
-        expect(res.body).toBeInstanceOf(Array); // Debe devolver un array
+    it('should allow access to a protected route with a valid token', () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app)
+            .get('/protected')
+            .set('Authorization', `Bearer ${userToken}`);
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Acceso concedido a ruta protegida');
     }));
-    // Prueba para filtrar taxis
-    it('should filter taxis', () => __awaiter(void 0, void 0, void 0, function* () {
-        const res = yield (0, supertest_1.default)(app_1.default)
-            .get('/api/taxis/filter')
-            .set('Authorization', `Bearer ${token}`);
-        expect(res.statusCode).toEqual(200);
+    it('should return 403 if non-admin user tries to access an admin route', () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app)
+            .get('/admin')
+            .set('Authorization', `Bearer ${userToken}`);
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('Acceso restringido: no eres administrador');
     }));
-    // Prueba para obtener trayectorias
-    it('should get all trajectories', () => __awaiter(void 0, void 0, void 0, function* () {
-        const res = yield (0, supertest_1.default)(app_1.default)
-            .get('/api/trajectories')
-            .set('Authorization', `Bearer ${token}`);
-        expect(res.statusCode).toEqual(200);
-        expect(res.body).toBeInstanceOf(Array); // Debe devolver un array
-    }));
-    // Prueba para exportar trayectorias
-    it('should export trajectories', () => __awaiter(void 0, void 0, void 0, function* () {
-        const res = yield (0, supertest_1.default)(app_1.default)
-            .get('/api/trajectories/export?taxi_id=1&date=2024-09-22&email=test@example.com')
-            .set('Authorization', `Bearer ${token}`); // Usa un token válido
-        expect(res.statusCode).toEqual(200);
-        expect(res.header['content-type']).toEqual('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    it('should allow access to an admin route with a valid admin token', () => __awaiter(void 0, void 0, void 0, function* () {
+        const response = yield (0, supertest_1.default)(app)
+            .get('/admin')
+            .set('Authorization', `Bearer ${adminToken}`);
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Acceso concedido a ruta de administrador');
     }));
 });

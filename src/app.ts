@@ -23,7 +23,7 @@ app.use('/api/users', userRoutes);
 loginFunction(app);
 
 //Estableciendo el puerto://
-app.listen(PORT, (): void => {
+app.listen(PORT, '0.0.0.0', (): void => {
 console.log('Escuchando el siguiente puerto :', PORT);
 });
 

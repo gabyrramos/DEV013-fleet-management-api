@@ -1,89 +1,76 @@
 import request from 'supertest';
-import app from '../app'; 
+import express, { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { jwtMiddleware, isAuthenticated, isAdmin } from '../middleware/authorization'; 
 
-const secretKey = 'test_secret_key'; 
+const app = express();
+app.use(express.json());
 
-// Simulando un usuario y token
-const user = {
-    id: 1,
-    email: 'test@example.com',
-    role: 'admin',
-};
-const token = jwt.sign(user, secretKey);
+const secretKey = 'test_secret_key';
 
-describe('Authentication Middleware', () => {
-    
-    describe('JWT Middleware', () => {
-        it('should return 401 if no authorization header is provided', async () => {
-            const res = await request(app).get('/protected-endpoint');
-            expect(res.statusCode).toEqual(401);
-            expect(res.body).toHaveProperty('message', 'Falta el token de autorización');
-        });
+// Ruta protegida que requiere autenticación
+app.get('/protected', jwtMiddleware(secretKey), isAuthenticated, (req: Request, res: Response) => {
+    res.status(200).json({ message: 'Acceso concedido' });
+});
 
-        it('should return 400 if the token format is incorrect', async () => {
-            const res = await request(app)
-                .get('/protected-endpoint')
-                .set('Authorization', 'InvalidToken');
-            expect(res.statusCode).toEqual(400);
-            expect(res.body).toHaveProperty('message', 'Formato de token incorrecto');
-        });
+// Ruta protegida que requiere que el usuario sea admin
+app.get('/admin', jwtMiddleware(secretKey), isAdmin, (req: Request, res: Response) => {
+    res.status(200).json({ message: 'Acceso como administrador' });
+});
 
-        it('should return 403 if the token is invalid', async () => {
-            const res = await request(app)
-                .get('/protected-endpoint')
-                .set('Authorization', 'Bearer invalid_token');
-            expect(res.statusCode).toEqual(403);
-            expect(res.body).toHaveProperty('message', 'No tienes permiso para acceder');
-        });
+describe('Middleware Tests', () => {
+    let userToken: string;
+    let adminToken: string;
 
-        it('should allow access to a protected endpoint with a valid token', async () => {
-            const res = await request(app)
-                .get('/protected-endpoint')
-                .set('Authorization', `Bearer ${token}`);
-            expect(res.statusCode).toEqual(200);
-            expect(res.body).toHaveProperty('message', 'Acceso concedido'); // Cambia esto según tu lógica
-        });
+    beforeAll(() => {
+        // Creamos un token de usuario normal y un token de administrador
+        userToken = jwt.sign({ id: 1, email: 'user@test.com', role: 'user' }, secretKey, { expiresIn: '1h' });
+        adminToken = jwt.sign({ id: 2, email: 'admin@test.com', role: 'admin' }, secretKey, { expiresIn: '1h' });
     });
 
-    describe('isAuthenticated Middleware', () => {
-        it('should return 401 if user is not authenticated', async () => {
-            const res = await request(app).get('/protected-endpoint');
-            expect(res.statusCode).toEqual(401);
-            expect(res.body).toHaveProperty('message', 'Falta el token de autorización');
-        });
-
-        it('should allow access if user is authenticated', async () => {
-            const res = await request(app)
-                .get('/protected-endpoint')
-                .set('Authorization', `Bearer ${token}`);
-            expect(res.statusCode).toEqual(200);
-            expect(res.body).toHaveProperty('message', 'Acceso concedido'); // Cambia esto según tu lógica
-        });
+    it('should return 401 if no authorization header is provided', async () => {
+        const response = await request(app).get('/protected');
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe('Falta el token de autorización');
     });
 
-    describe('isAdmin Middleware', () => {
-        it('should return 403 if user is not an admin', async () => {
-            const nonAdminUser = {
-                id: 2,
-                email: 'nonadmin@example.com',
-                role: 'user',
-            };
-            const nonAdminToken = jwt.sign(nonAdminUser, secretKey);
+    it('should return 400 if token format is incorrect', async () => {
+        const response = await request(app)
+            .get('/protected')
+            .set('Authorization', `Basic ${userToken}`);
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Formato de token incorrecto');
+    });
 
-            const res = await request(app)
-                .get('/admin-endpoint')
-                .set('Authorization', `Bearer ${nonAdminToken}`);
-            expect(res.statusCode).toEqual(403);
-            expect(res.body).toHaveProperty('message', 'Acceso restringido: no eres administrador');
-        });
+    it('should return 403 if token is invalid', async () => {
+        const response = await request(app)
+            .get('/protected')
+            .set('Authorization', `Bearer invalid_token`);
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('No tienes permiso para acceder');
+    });
 
-        it('should allow access if user is an admin', async () => {
-            const res = await request(app)
-                .get('/admin-endpoint')
-                .set('Authorization', `Bearer ${token}`);
-            expect(res.statusCode).toEqual(200);
-            expect(res.body).toHaveProperty('message', 'Acceso concedido'); // Cambia esto según tu lógica
-        });
+    it('should allow access with a valid token', async () => {
+        const response = await request(app)
+            .get('/protected')
+            .set('Authorization', `Bearer ${userToken}`);
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Acceso concedido');
+    });
+
+    it('should return 403 if non-admin user tries to access admin route', async () => {
+        const response = await request(app)
+            .get('/admin')
+            .set('Authorization', `Bearer ${userToken}`);
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('Acceso restringido: no eres administrador');
+    });
+
+    it('should allow access to admin route with a valid admin token', async () => {
+        const response = await request(app)
+            .get('/admin')
+            .set('Authorization', `Bearer ${adminToken}`);
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Acceso como administrador');
     });
 });
